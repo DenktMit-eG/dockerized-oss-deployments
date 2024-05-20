@@ -37,7 +37,7 @@ services:
       - "traefik.http.routers.mydashboard.service=api@internal"
       - "traefik.http.routers.mydashboard.middlewares=myauth"
       - "traefik.http.middlewares.myauth.basicauth.users=${DASHBOARD_BASIC_AUTH}"
-    restart: always
+    restart: unless-stopped
 
 networks:
   podman:

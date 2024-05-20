@@ -14,7 +14,6 @@ services:
     ports:
       - "1081:80"
       - "1082:443"
-      - "8080:8080"
     command:
       - --log.level=DEBUG
       - --api.dashboard=true
@@ -37,7 +36,8 @@ services:
       - "traefik.http.routers.mydashboard.tls.certresolver=lets-encrypt"
       - "traefik.http.routers.mydashboard.service=api@internal"
       - "traefik.http.routers.mydashboard.middlewares=myauth"
-      - "traefik.http.middlewares.myauth.basicauth.users=test:$$apr1$$H6uskkkW$$IgXLP6ewTrSuBkTrqE8wj/"
+      - "traefik.http.middlewares.myauth.basicauth.users=${DASHBOARD_BASIC_AUTH}"
+    restart: always
 
 networks:
   podman:

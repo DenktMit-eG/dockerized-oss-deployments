@@ -23,3 +23,11 @@ echo iptables-persistent iptables-persistent/autosave_v4 boolean true | debconf-
 echo iptables-persistent iptables-persistent/autosave_v6 boolean true | debconf-set-selections
 apt-get install iptables-persistent -y
 
+# Check the current rules
+# iptables -t nat -L
+
+# Remove the rules with this commands
+iptables -t nat -D PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 1081
+iptables -t nat -D PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 1082
+ip6tables -t nat -D PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 1081
+ip6tables -t nat -D PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 1082

@@ -5,7 +5,7 @@ services:
     image: docker.io/nginxdemos/hello:plain-text
     container_name: hello
     networks:
-      - podman
+      - proxy
     environment:
       - HOSTNAME=${HOSTNAME}
     hostname: ${HOSTNAME}
@@ -22,5 +22,5 @@ services:
     restart: unless-stopped
 
 networks:
-  podman:
+  proxy:
     external: true

@@ -1,0 +1,23 @@
+version: '3.9'
+
+services:
+  hello:
+    image: docker.io/traefik/whoami
+    container_name: whoami
+    networks:
+      - proxy
+    environment:
+      - HOSTNAME=${HOSTNAME}
+    hostname: ${HOSTNAME}
+    labels:
+      - "traefik.docker.network=dev"
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.entrypoints=websecure"
+      - "traefik.http.routers.whoami.rule=Host(`${HOSTNAME}`)"
+      - "traefik.http.routers.whoami.tls.certresolver=lets-encrypt"
+      - "traefik.http.routers.whoami.tls=true"
+    restart: unless-stopped
+
+networks:
+  proxy:
+    external: true

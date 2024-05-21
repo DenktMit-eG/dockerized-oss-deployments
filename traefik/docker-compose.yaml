@@ -5,40 +5,45 @@ services:
     image: docker.io/library/traefik:latest
     container_name: traefik
     networks:
-      - podman
+      - proxy
     security_opt:
       - label=type:container_runtime_t
     volumes:
       - ${PODMAN_SOCKET}:/var/run/docker.sock:z
       - /opt/traefik/acme.json:/acme.json:z
+      - /opt/traefik/logs:/logs:z
     ports:
-      - "1081:80"
-      - "1082:443"
+      - "80:80"
+      - "443:443"
     command:
-      - --log.level=DEBUG
+      - --accesslog.fields.headers.defaultmode=keep
+      - --accesslog.filepath=/logs/access.log
+      - --accesslog=true
       - --api.dashboard=true
       - --api.insecure=false
       - --certificatesresolvers.lets-encrypt.acme.email=${LETS_ENCRYPT_EMAIL}
       - --certificatesresolvers.lets-encrypt.acme.storage=/acme.json
       - --certificatesresolvers.lets-encrypt.acme.tlschallenge=true
-      - --entrypoints.http.address=:80
-      - --entrypoints.http.http.redirections.entryPoint.to=https
-      - --entrypoints.http.http.redirections.entryPoint.scheme=https
-      - --entrypoints.https.address=:443
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entryPoint.scheme=https
+      - --entrypoints.web.http.redirections.entryPoint.to=websecure
+      - --entrypoints.websecure.address=:443
+      - --log.level=DEBUG
       - --providers.docker=true
+      - --providers.docker.network=proxy
     environment:
       LETS_ENCRYPT_EMAIL: ${LETS_ENCRYPT_EMAIL}
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mydashboard.rule=Host(`${HOSTNAME}`)"
-      - "traefik.http.routers.mydashboard.entrypoints=https"
-      - "traefik.http.routers.mydashboard.tls=true"
-      - "traefik.http.routers.mydashboard.tls.certresolver=lets-encrypt"
-      - "traefik.http.routers.mydashboard.service=api@internal"
-      - "traefik.http.routers.mydashboard.middlewares=myauth"
       - "traefik.http.middlewares.myauth.basicauth.users=${DASHBOARD_BASIC_AUTH}"
+      - "traefik.http.routers.mydashboard.entrypoints=websecure"
+      - "traefik.http.routers.mydashboard.middlewares=myauth"
+      - "traefik.http.routers.mydashboard.rule=Host(`${HOSTNAME}`)"
+      - "traefik.http.routers.mydashboard.service=api@internal"
+      - "traefik.http.routers.mydashboard.tls.certresolver=lets-encrypt"
+      - "traefik.http.routers.mydashboard.tls=true"
     restart: unless-stopped
 
 networks:
-  podman:
+  proxy:
     external: true
